@@ -142,3 +142,7 @@ Ideas for later
 - More languages such as Dholuo, Kikuyu and Somali, plus Sheng copy
 - Peer support groups over SMS, moderated by counselors
 - A sponsor dashboard built on `/api/admin/stats`, with anonymous totals only
+
+Licence
+
+All rights reserved. Nobody may use, copy, change or share this code without written permission. See `LICENSE`.
