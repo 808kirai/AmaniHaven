@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AmaniHaven Counselors</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d2321; --muted: #5d6763; --line: #dfdcd5;
+    --accent: #1f6f5c; --crisis: #b3261e; --safeguarding: #8a4b08; --elevated: #8a6d00; --routine: #3d5a80;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #141817; --panel: #1d2321; --ink: #e8ece9; --muted: #9aa5a0; --line: #2f3835;
+      --accent: #5fbfa5; --crisis: #ff8a80; --safeguarding: #f0a35e; --elevated: #e6c84f; --routine: #8fb3e0; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; }
+  h1 { font-size: 17px; margin: 0; }
+  main { max-width: 920px; margin: 0 auto; padding: 16px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .case { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--routine); border-radius: 8px; margin-bottom: 14px; padding: 14px; }
+  .case.crisis { border-left-color: var(--crisis); } .case.safeguarding { border-left-color: var(--safeguarding); }
+  .case.elevated { border-left-color: var(--elevated); }
+  .tier { font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .05em; }
+  .crisis .tier { color: var(--crisis); } .safeguarding .tier { color: var(--safeguarding); } .elevated .tier { color: var(--elevated); }
+  .thread { margin: 10px 0; display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+  .msg { padding: 8px 10px; border-radius: 8px; max-width: 85%; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.in { background: var(--bg); align-self: flex-start; } .msg.out { background: color-mix(in srgb, var(--accent) 15%, transparent); align-self: flex-end; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  textarea, input { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  button { font: inherit; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button.secondary { background: transparent; color: var(--accent); }
+  button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  #login { max-width: 360px; margin: 15vh auto; background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--line); }
+  .count { font-size: 12px; text-align: right; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>AmaniHaven counselors</h1>
+  <p class="muted">Enter your counselor token. It stays in this browser tab only.</p>
+  <form id="login-form">
+    <label for="token">Token</label>
+    <input id="token" type="password" autocomplete="off" required>
+    <div class="actions"><button type="submit">Sign in</button></div>
+    <p id="login-error" class="muted" role="alert"></p>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <h1>Open cases <span id="summary" class="muted"></span></h1>
+    <div><span id="who" class="muted"></span> <button class="secondary" id="logout">Sign out</button></div>
+  </header>
+  <main id="cases" aria-live="polite"></main>
+</div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+let token = sessionStorage.getItem("amani_token") || "";
+let signedIn = false;
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json", ...(opts.headers || {}) } });
+  if (res.status === 401) { if (signedIn) signOut(); throw new Error("Not signed in"); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || res.statusText);
+  return data;
+}
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") node.className = v; else if (k.startsWith("on")) node.addEventListener(k.slice(2), v); else node.setAttribute(k, v);
+  }
+  for (const c of children) node.append(c instanceof Node ? c : document.createTextNode(c ?? ""));
+  return node;
+}
+
+function segments(text) { return Math.max(1, Math.ceil(text.length / 153)); }
+
+function renderCase(c) {
+  const box = el("textarea", { rows: "3", maxlength: "440", "aria-label": "Reply to case " + c.id, placeholder: "Write a reply (sent by SMS)" });
+  const counter = el("div", { class: "count muted" }, "0 chars");
+  box.addEventListener("input", () => { counter.textContent = box.value.length + " chars, " + segments(box.value) + " SMS"; });
+  const act = (fn) => async () => { try { await fn(); await load(); } catch (e) { alert(e.message); } };
+
+  const thread = el("div", { class: "thread" }, ...c.thread.map(m =>
+    el("div", { class: "msg " + m.direction, title: m.at }, m.text ?? "[unreadable]")));
+
+  return el("article", { class: "case " + c.tier },
+    el("div", {}, el("span", { class: "tier" }, c.tier), "  #" + c.id + "  ",
+      el("span", { class: "muted" }, `${c.status}${c.claimed_by ? " by " + c.claimed_by : ""} · via ${c.source} · ${c.language} · ${c.phone_masked} · opened ${new Date(c.created_at).toLocaleString()}`)),
+    el("div", {}, c.reason || ""),
+    c.callback_consent ? el("div", { class: "muted" }, "Asked for a phone call.") : "",
+    c.opted_out ? el("div", { class: "muted" }, "Texted STOP: replies are blocked until they write again.") : "",
+    thread, box, counter,
+    el("div", { class: "actions" },
+      el("button", { onclick: act(() => api(`/api/counselor/cases/${c.id}/reply`, { method: "POST", body: JSON.stringify({ text: box.value }) })) }, "Send SMS"),
+      c.status === "open" ? el("button", { class: "secondary", onclick: act(() => api(`/api/counselor/cases/${c.id}/claim`, { method: "POST" })) }, "Claim") : "",
+      (c.callback_consent || c.tier === "crisis") ? el("button", { class: "secondary", onclick: async () => {
+        if (!confirm("Reveal the full number? This is logged.")) return;
+        try { const r = await api(`/api/counselor/cases/${c.id}/reveal-phone`, { method: "POST" }); prompt("Phone number (logged):", r.phone); } catch (e) { alert(e.message); }
+      } }, "Show number to call") : "",
+      el("button", { class: "secondary", onclick: act(async () => {
+        const note = prompt("Closing note (optional, encrypted):", ""); if (note === null) throw new Error("Cancelled");
+        return api(`/api/counselor/cases/${c.id}/close`, { method: "POST", body: JSON.stringify({ note }) });
+      }) }, "Close case"),
+    ));
+}
+
+let drafting = false;
+async function load() {
+  if (drafting) return; // don't wipe a reply someone is typing
+  const cases = await api("/api/counselor/cases");
+  const counts = cases.reduce((a, c) => (a[c.tier] = (a[c.tier] || 0) + 1, a), {});
+  $("#summary").textContent = Object.entries(counts).map(([t, n]) => `${n} ${t}`).join(" · ") || "none";
+  const list = $("#cases"); list.replaceChildren(...(cases.length ? cases.map(renderCase) : [el("p", { class: "muted" }, "No open cases.")]));
+  document.title = (counts.crisis ? `(${counts.crisis}) ` : "") + "AmaniHaven Counselors";
+}
+
+document.addEventListener("focusin", (e) => { drafting = e.target.tagName === "TEXTAREA" && e.target.value.length > 0; });
+document.addEventListener("input", (e) => { if (e.target.tagName === "TEXTAREA") drafting = e.target.value.length > 0; });
+
+async function start() {
+  try {
+    const me = await api("/api/counselor/me");
+    $("#who").textContent = me.name; signedIn = true;
+    $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+    await load();
+    setInterval(() => load().catch(() => {}), 15000);
+  } catch (e) { sessionStorage.removeItem("amani_token"); $("#login-error").textContent = "That token was not accepted."; }
+}
+
+function signOut() { sessionStorage.removeItem("amani_token"); token = ""; location.reload(); }
+
+$("#login-form").addEventListener("submit", (e) => { e.preventDefault(); token = $("#token").value.trim(); sessionStorage.setItem("amani_token", token); start(); });
+$("#logout").addEventListener("click", signOut);
+if (token) start();
+</script>
+</body>
+</html>
