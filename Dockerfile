@@ -7,4 +7,5 @@ RUN useradd --create-home amani && mkdir -p /data && chown amani /data
 USER amani
 ENV APP_ENV=production DATABASE_PATH=/data/amanihaven.db
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# hosts like render set PORT, locally it falls back to 8000
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers"]

@@ -1,0 +1,60 @@
+# render blueprint for the demo server
+# in render pick new, blueprint, then this repo, and fill in the values it asks for
+services:
+  - type: web
+    name: amanihaven
+    runtime: docker
+    # starter stays awake, the free plan sleeps and ussd sessions time out while it wakes
+    plan: starter
+    # closest render region to kenya
+    region: frankfurt
+    healthCheckPath: /health
+    # the database lives here so it survives restarts and deploys
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /data/amanihaven.db
+      - key: DEFAULT_LANGUAGE
+        value: sw
+      - key: RETENTION_DAYS
+        value: "30"
+      # render's proxy sits in front of the app, trust it for the real client address
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"
+      # privacy keys, generate once, paste in and back them up
+      - key: PHONE_HASH_PEPPER
+        sync: false
+      - key: DATA_ENCRYPTION_KEY
+        sync: false
+      - key: SMS_GATEWAY
+        value: africastalking
+      - key: AT_USERNAME
+        value: sandbox
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_SENDER_ID
+        sync: false
+      - key: USSD_CODE
+        sync: false
+      - key: SMS_SHORTCODE
+        sync: false
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: COUNSELOR_TOKENS
+        sync: false
+      - key: COUNSELOR_ALERT_NUMBERS
+        sync: false
+      # rules only until there is an anthropic key
+      - key: LLM_ENABLED
+        value: "false"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: MAX_REPLIES_PER_HOUR
+        value: "20"
