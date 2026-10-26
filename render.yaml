@@ -4,16 +4,17 @@ services:
   - type: web
     name: amanihaven
     runtime: docker
-    # starter stays awake, the free plan sleeps and ussd sessions time out while it wakes
-    plan: starter
+    # free is fine for the demo, an uptime pinger on /health every 5 minutes stops it sleeping
+    # the free plan has no disk, so the database starts empty after every restart or deploy
+    # for a real pilot switch to plan starter and add the disk below
+    plan: free
     # closest render region to kenya
     region: frankfurt
     healthCheckPath: /health
-    # the database lives here so it survives restarts and deploys
-    disk:
-      name: data
-      mountPath: /data
-      sizeGB: 1
+    # disk:
+    #   name: data
+    #   mountPath: /data
+    #   sizeGB: 1
     envVars:
       - key: APP_ENV
         value: production
