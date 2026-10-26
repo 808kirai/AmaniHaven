@@ -41,7 +41,10 @@ def test_negated_crisis_asks_safety_question(text):
 
 @pytest.mark.parametrize(
     "text",
-    ["I'm tired of living", "nobody would miss me", "Nimechoka na maisha", "life has no meaning"],
+    [
+        "I'm tired of living", "nobody would miss me", "Nimechoka na maisha", "life has no meaning",
+        "im dying help mee", "I am dying", "I feel like dying", "nakufa", "ninakufa", "nahisi kufa",
+    ],
 )
 def test_passive_ideation_asks_safety_question(text):
     r = assess(text)
@@ -66,7 +69,10 @@ def test_elevated(text):
 
 @pytest.mark.parametrize(
     "text",
-    ["I'm stressed about exams", "this exam is killing me", "hello", "sina pesa ya karo", "I can't sleep"],
+    [
+        "I'm stressed about exams", "this exam is killing me", "hello", "sina pesa ya karo", "I can't sleep",
+        "im dying of laughter", "I'm dying to see the new film", "nakufa kicheko",
+    ],
 )
 def test_routine(text):
     assert assess(text).tier == "routine"

@@ -70,6 +70,11 @@ passive_patterns = _rx(
     r"\bmaisha (hayana|haina) (maana|thamani)\b",
     r"\bningependa kufa\b",
     r"\bbora nife\b",
+    # im dying on its own is unclear, so ask, but leave out the everyday jokes
+    r"\b(i am|im|i m) (dying|going to die)\b(?! (of|from|to|for) (laugh\w*|boredom|curiosity|embarrassment|see|know|hear|try))",
+    r"\bfeel(s|ing)? like dying\b",
+    r"\b(ni)?nakufa\b(?! (kicheko|na kicheko|njaa))",
+    r"\b(nahisi|najisikia) (kama )?(kufa|ninakufa)\b",
 )
 
 # abuse, violence and threats against the person
