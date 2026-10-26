@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>AmaniHaven Counselors</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f6f5c'/%3E%3Cpath d='M16 24s-7-4.3-7-9.4A3.9 3.9 0 0 1 16 12a3.9 3.9 0 0 1 7 2.6C23 19.7 16 24 16 24z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d2321; --muted: #5d6763; --line: #dfdcd5;
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d2321; --muted: #5d6763; --line: #e4e1da;
     --accent: #1f6f5c; --crisis: #b3261e; --safeguarding: #8a4b08; --elevated: #8a6d00; --routine: #3d5a80;
   }
   @media (prefers-color-scheme: dark) {
@@ -15,44 +19,69 @@
       --accent: #5fbfa5; --crisis: #ff8a80; --safeguarding: #f0a35e; --elevated: #e6c84f; --routine: #8fb3e0; }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; }
-  h1 { font-size: 17px; margin: 0; }
-  main { max-width: 920px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; font-feature-settings: "cv11", "ss01"; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 1; }
+  h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand svg { flex: none; }
+  main { max-width: 860px; margin: 0 auto; padding: 20px 16px 48px; }
   .muted { color: var(--muted); font-size: 13px; }
-  .case { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--routine); border-radius: 8px; margin-bottom: 14px; padding: 14px; }
+  .case { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--routine); border-radius: 10px; margin-bottom: 16px; padding: 16px 18px; }
   .case.crisis { border-left-color: var(--crisis); } .case.safeguarding { border-left-color: var(--safeguarding); }
   .case.elevated { border-left-color: var(--elevated); }
-  .tier { font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .05em; }
+  .case-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .tier { font-weight: 600; font-size: 14px; color: var(--routine); }
   .crisis .tier { color: var(--crisis); } .safeguarding .tier { color: var(--safeguarding); } .elevated .tier { color: var(--elevated); }
-  .thread { margin: 10px 0; display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
-  .msg { padding: 8px 10px; border-radius: 8px; max-width: 85%; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .msg.in { background: var(--bg); align-self: flex-start; } .msg.out { background: color-mix(in srgb, var(--accent) 15%, transparent); align-self: flex-end; }
-  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  textarea, input { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
-  button { font: inherit; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  .reason { margin: 6px 0 0; }
+  .flag { display: inline-block; margin: 8px 8px 0 0; padding: 2px 10px; border-radius: 999px; font-size: 13px; background: var(--bg); border: 1px solid var(--line); }
+  .thread { margin: 14px 0 12px; display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
+  .msg { padding: 8px 12px; border-radius: 12px; max-width: 82%; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg time { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .msg.in { background: var(--bg); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.out { background: color-mix(in srgb, var(--accent) 14%, transparent); align-self: flex-end; border-bottom-right-radius: 4px; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+  label { font-size: 13px; font-weight: 500; }
+  textarea, input { width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); resize: vertical; }
+  button { font: inherit; font-weight: 500; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
   button.secondary { background: transparent; color: var(--accent); }
-  button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  #login { max-width: 360px; margin: 15vh auto; background: var(--panel); padding: 20px; border-radius: 8px; border: 1px solid var(--line); }
-  .count { font-size: 12px; text-align: right; }
+  button.danger { border-color: var(--crisis); background: var(--crisis); }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .count { font-size: 12px; text-align: right; margin-top: 4px; }
+  .panel { margin-top: 12px; padding: 12px 14px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+  .panel p { margin: 0 0 8px; }
+  .phone { font-size: 18px; font-weight: 600; color: var(--accent); text-decoration: none; }
+  .error { color: var(--crisis); font-size: 13px; margin: 8px 0 0; }
+  .empty { text-align: center; padding: 48px 16px; }
+  .empty p { margin: 4px 0; }
+  #login { max-width: 380px; margin: 14vh auto; background: var(--panel); padding: 24px; border-radius: 12px; border: 1px solid var(--line); }
+  #login h1 { margin: 14px 0 6px; font-size: 20px; }
+  #login form { margin-top: 18px; }
   .hidden { display: none; }
 </style>
 </head>
 <body>
 <div id="login">
-  <h1>AmaniHaven counselors</h1>
-  <p class="muted">Enter your counselor token. It stays in this browser tab only.</p>
+  <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1f6f5c"/><path d="M16 24s-7-4.3-7-9.4A3.9 3.9 0 0 1 16 12a3.9 3.9 0 0 1 7 2.6C23 19.7 16 24 16 24z" fill="#fff"/></svg>
+  <h1>Karibu, counselor</h1>
+  <p class="muted">Sign in with the token you were given. It's kept in this tab only and forgotten when you close it.</p>
   <form id="login-form">
-    <label for="token">Token</label>
+    <label for="token">Your token</label>
     <input id="token" type="password" autocomplete="off" required>
     <div class="actions"><button type="submit">Sign in</button></div>
-    <p id="login-error" class="muted" role="alert"></p>
+    <p id="login-error" class="error" role="alert"></p>
   </form>
 </div>
 
 <div id="app" class="hidden">
   <header>
-    <h1>Open cases <span id="summary" class="muted"></span></h1>
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1f6f5c"/><path d="M16 24s-7-4.3-7-9.4A3.9 3.9 0 0 1 16 12a3.9 3.9 0 0 1 7 2.6C23 19.7 16 24 16 24z" fill="#fff"/></svg>
+      <div>
+        <h1>Open cases</h1>
+        <div id="summary" class="muted"></div>
+      </div>
+    </div>
     <div><span id="who" class="muted"></span> <button class="secondary" id="logout">Sign out</button></div>
   </header>
   <main id="cases" aria-live="polite"></main>
@@ -63,11 +92,16 @@ const $ = (sel) => document.querySelector(sel);
 let token = sessionStorage.getItem("amani_token") || "";
 let signedIn = false;
 
+// plain words for what the api sends
+const tierNames = { crisis: "Crisis", safeguarding: "Safeguarding", elevated: "Needs a check-in", routine: "Routine" };
+const languageNames = { sw: "Kiswahili", en: "English" };
+const sourceNames = { sms: "SMS", ussd: "USSD menu" };
+
 async function api(path, opts = {}) {
   const res = await fetch(path, { ...opts, headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json", ...(opts.headers || {}) } });
-  if (res.status === 401) { if (signedIn) signOut(); throw new Error("Not signed in"); }
+  if (res.status === 401) { if (signedIn) signOut(); throw new Error("You've been signed out. Please sign in again."); }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.detail || res.statusText);
+  if (!res.ok) throw new Error(data.detail || "Something went wrong. Please try again.");
   return data;
 }
 
@@ -82,57 +116,107 @@ function el(tag, attrs = {}, ...children) {
 
 function segments(text) { return Math.max(1, Math.ceil(text.length / 153)); }
 
-function renderCase(c) {
-  const box = el("textarea", { rows: "3", maxlength: "440", "aria-label": "Reply to case " + c.id, placeholder: "Write a reply (sent by SMS)" });
-  const counter = el("div", { class: "count muted" }, "0 chars");
-  box.addEventListener("input", () => { counter.textContent = box.value.length + " chars, " + segments(box.value) + " SMS"; });
-  const act = (fn) => async () => { try { await fn(); await load(); } catch (e) { alert(e.message); } };
-
-  const thread = el("div", { class: "thread" }, ...c.thread.map(m =>
-    el("div", { class: "msg " + m.direction, title: m.at }, m.text ?? "[unreadable]")));
-
-  return el("article", { class: "case " + c.tier },
-    el("div", {}, el("span", { class: "tier" }, c.tier), "  #" + c.id + "  ",
-      el("span", { class: "muted" }, `${c.status}${c.claimed_by ? " by " + c.claimed_by : ""} · via ${c.source} · ${c.language} · ${c.phone_masked} · opened ${new Date(c.created_at).toLocaleString()}`)),
-    el("div", {}, c.reason || ""),
-    c.callback_consent ? el("div", { class: "muted" }, "Asked for a phone call.") : "",
-    c.opted_out ? el("div", { class: "muted" }, "Texted STOP: replies are blocked until they write again.") : "",
-    thread, box, counter,
-    el("div", { class: "actions" },
-      el("button", { onclick: act(() => api(`/api/counselor/cases/${c.id}/reply`, { method: "POST", body: JSON.stringify({ text: box.value }) })) }, "Send SMS"),
-      c.status === "open" ? el("button", { class: "secondary", onclick: act(() => api(`/api/counselor/cases/${c.id}/claim`, { method: "POST" })) }, "Claim") : "",
-      (c.callback_consent || c.tier === "crisis") ? el("button", { class: "secondary", onclick: async () => {
-        if (!confirm("Reveal the full number? This is logged.")) return;
-        try { const r = await api(`/api/counselor/cases/${c.id}/reveal-phone`, { method: "POST" }); prompt("Phone number (logged):", r.phone); } catch (e) { alert(e.message); }
-      } }, "Show number to call") : "",
-      el("button", { class: "secondary", onclick: act(async () => {
-        const note = prompt("Closing note (optional, encrypted):", ""); if (note === null) throw new Error("Cancelled");
-        return api(`/api/counselor/cases/${c.id}/close`, { method: "POST", body: JSON.stringify({ note }) });
-      }) }, "Close case"),
-    ));
+// "just now", "12 min ago", "3 h ago", then the date
+function ago(iso) {
+  const mins = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + " min ago";
+  if (mins < 24 * 60) return Math.round(mins / 60) + " h ago";
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
-let drafting = false;
+function clock(iso) { return new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
+
+function renderCase(c) {
+  const error = el("p", { class: "error", role: "alert" });
+  const extra = el("div");
+  const act = (fn) => async () => { error.textContent = ""; try { await fn(); busy = false; await load(); } catch (e) { error.textContent = e.message; } };
+
+  const box = el("textarea", { rows: "3", maxlength: "440", "aria-label": "Reply to case " + c.id, placeholder: "Write a reply. It goes out as an SMS." });
+  const counter = el("div", { class: "count muted" }, " ");
+  const send = el("button", { disabled: "", onclick: act(() => api(`/api/counselor/cases/${c.id}/reply`, { method: "POST", body: JSON.stringify({ text: box.value.trim() }) })) }, "Send SMS");
+  box.addEventListener("input", () => {
+    const n = box.value.length;
+    counter.textContent = n ? `${n} characters, ${segments(box.value)} SMS` : " ";
+    send.toggleAttribute("disabled", !box.value.trim());
+  });
+
+  // a panel stays open until the counselor is done with it, so refreshes wait
+  const openPanel = (...nodes) => { busy = true; extra.replaceChildren(...nodes); };
+  const shut = () => { busy = false; extra.replaceChildren(); };
+
+  // showing a number is logged, so ask first, right here in the card
+  const revealPanel = () => openPanel(el("div", { class: "panel" },
+    el("p", {}, "Showing the full number is logged against your name. Only do it if you're about to call."),
+    el("div", { class: "actions" },
+      el("button", { onclick: async () => {
+        error.textContent = "";
+        try {
+          const r = await api(`/api/counselor/cases/${c.id}/reveal-phone`, { method: "POST" });
+          openPanel(el("div", { class: "panel" }, el("p", { class: "muted" }, "Number for this case"), el("a", { class: "phone", href: "tel:" + r.phone }, r.phone), el("div", { class: "actions" }, el("button", { class: "secondary", onclick: shut }, "Done"))));
+        } catch (e) { error.textContent = e.message; }
+      } }, "Show number"),
+      el("button", { class: "secondary", onclick: shut }, "Cancel"))));
+
+  const closePanel = () => {
+    const note = el("textarea", { rows: "2", id: "note-" + c.id, placeholder: "What happened, any follow-up needed" });
+    openPanel(el("div", { class: "panel" },
+      el("label", { for: "note-" + c.id }, "Closing note (optional, stored encrypted)"), note,
+      el("div", { class: "actions" },
+        el("button", { onclick: act(() => api(`/api/counselor/cases/${c.id}/close`, { method: "POST", body: JSON.stringify({ note: note.value }) })) }, "Close case"),
+        el("button", { class: "secondary", onclick: shut }, "Cancel"))));
+    note.focus();
+  };
+
+  const status = c.status === "open" ? "Waiting for someone" : c.claimed_by ? "With " + c.claimed_by : c.status;
+  const details = [status, "via " + (sourceNames[c.source] || c.source), languageNames[c.language] || c.language, c.phone_masked].filter(Boolean).join(" · ");
+
+  const thread = el("div", { class: "thread" }, ...c.thread.map(m =>
+    el("div", { class: "msg " + m.direction }, m.text ?? "[this message can't be read]", el("time", { datetime: m.at, title: new Date(m.at).toLocaleString() }, clock(m.at)))));
+
+  return el("article", { class: "case " + c.tier, "aria-label": `${tierNames[c.tier] || c.tier} case ${c.id}` },
+    el("div", { class: "case-top" },
+      el("span", { class: "tier" }, tierNames[c.tier] || c.tier),
+      el("span", { class: "muted", title: new Date(c.created_at).toLocaleString() }, `Case ${c.id} · opened ${ago(c.created_at)}`)),
+    el("div", { class: "muted" }, details),
+    c.reason ? el("p", { class: "reason" }, c.reason) : "",
+    c.callback_consent ? el("span", { class: "flag" }, "Would like a phone call") : "",
+    c.opted_out ? el("span", { class: "flag" }, "Texted STOP, so replies are paused until they write again") : "",
+    thread, box, counter,
+    el("div", { class: "actions" },
+      send,
+      c.status === "open" ? el("button", { class: "secondary", onclick: act(() => api(`/api/counselor/cases/${c.id}/claim`, { method: "POST" })) }, "I'll take this") : "",
+      (c.callback_consent || c.tier === "crisis") ? el("button", { class: "secondary", onclick: revealPanel }, "Call them") : "",
+      el("button", { class: "secondary", onclick: closePanel }, "Close case")),
+    extra, error);
+}
+
+// don't redraw while someone is typing a reply or has a panel open
+let busy = false;
 async function load() {
-  if (drafting) return; // don't wipe a reply someone is typing
+  if (busy) return;
   const cases = await api("/api/counselor/cases");
   const counts = cases.reduce((a, c) => (a[c.tier] = (a[c.tier] || 0) + 1, a), {});
-  $("#summary").textContent = Object.entries(counts).map(([t, n]) => `${n} ${t}`).join(" · ") || "none";
-  const list = $("#cases"); list.replaceChildren(...(cases.length ? cases.map(renderCase) : [el("p", { class: "muted" }, "No open cases.")]));
+  const order = ["crisis", "safeguarding", "elevated", "routine"];
+  const parts = order.filter(t => counts[t]).map(t => `${counts[t]} ${(tierNames[t] || t).toLowerCase()}`);
+  $("#summary").textContent = (parts.join(" · ") || "Nothing open") + " · checked " + clock(new Date().toISOString());
+  const list = $("#cases");
+  list.replaceChildren(...(cases.length ? cases.map(renderCase) : [el("div", { class: "empty" },
+    el("p", {}, "No open cases right now."),
+    el("p", { class: "muted" }, "New ones will appear here by themselves. This page checks every 15 seconds."))]));
   document.title = (counts.crisis ? `(${counts.crisis}) ` : "") + "AmaniHaven Counselors";
 }
 
-document.addEventListener("focusin", (e) => { drafting = e.target.tagName === "TEXTAREA" && e.target.value.length > 0; });
-document.addEventListener("input", (e) => { if (e.target.tagName === "TEXTAREA") drafting = e.target.value.length > 0; });
+document.addEventListener("input", (e) => { if (e.target.tagName === "TEXTAREA" && !e.target.closest(".panel")) busy = e.target.value.length > 0; });
 
 async function start() {
   try {
     const me = await api("/api/counselor/me");
-    $("#who").textContent = me.name; signedIn = true;
+    $("#who").textContent = "Hi, " + me.name; signedIn = true;
     $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
     await load();
     setInterval(() => load().catch(() => {}), 15000);
-  } catch (e) { sessionStorage.removeItem("amani_token"); $("#login-error").textContent = "That token was not accepted."; }
+  } catch (e) { sessionStorage.removeItem("amani_token"); $("#login-error").textContent = "That token didn't work. Check it and try again."; }
 }
 
 function signOut() { sessionStorage.removeItem("amani_token"); token = ""; location.reload(); }
