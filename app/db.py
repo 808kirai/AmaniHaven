@@ -240,6 +240,12 @@ def get_case(case_id):
         return c.execute("select * from cases where id = ?", (case_id,)).fetchone()
 
 
+def latest_case(user_hash):
+    # the newest case for one person, open or closed, used by the demo page
+    with tx() as c:
+        return c.execute("select * from cases where user_hash = ? order by id desc limit 1", (user_hash,)).fetchone()
+
+
 def update_case(case_id, **fields):
     if set(fields) - {"status", "claimed_by", "note_enc", "tier"}:
         raise ValueError("unknown case fields")

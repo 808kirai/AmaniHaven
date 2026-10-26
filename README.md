@@ -50,6 +50,8 @@ uvicorn app.main:app --reload
 
 The counselor dashboard is at http://localhost:8000/counselor and takes a token from `COUNSELOR_TOKENS`. With `LLM_ENABLED=false` it runs on the rules alone and needs no Claude API key.
 
+With `DEMO_ENABLED=true` there is also a public page at http://localhost:8000/demo. It shows a pretend phone that can dial the menu and text the line, next to the case card a counselor would see. Each visitor gets a made up number, and SMS to those numbers stay on the page. The app refuses to start with the demo on unless `AT_USERNAME` is `sandbox`, so a demo can never page a real on call team.
+
 Connecting Africa's Talking
 
 Start in the Africa's Talking sandbox and set these callback URLs in their dashboard.
@@ -104,6 +106,7 @@ Layout
 - `app/privacy.py` - Hashing, encryption and number masking
 - `app/db.py` - Storage, retention purge and right to erasure
 - `app/gateway.py` - Africa's Talking SMS sending
+- `app/demo.py` and `app/static/demo.html` - The public demo page
 - `scripts/simulate.py` - Try the service from a terminal
 - `tests/` - Automated tests
 
@@ -119,6 +122,7 @@ All settings come from environment variables, listed with examples in `.env.exam
 - `COUNSELOR_TOKENS` - Counselor names and dashboard tokens
 - `COUNSELOR_ALERT_NUMBERS` - Phones paged for crisis cases
 - `MAX_REPLIES_PER_HOUR` - Reply limit per person, defaults to `20`
+- `DEMO_ENABLED` - Turns on the public /demo page, sandbox only
 
 Before launch
 

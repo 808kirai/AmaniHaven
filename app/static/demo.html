@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Try AmaniHaven</title>
+<meta name="description" content="Try AmaniHaven, free mental health support over USSD and SMS, from a pretend phone in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f6f5c'/%3E%3Cpath d='M16 24s-7-4.3-7-9.4A3.9 3.9 0 0 1 16 12a3.9 3.9 0 0 1 7 2.6C23 19.7 16 24 16 24z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d2321; --muted: #5d6763; --line: #e4e1da;
+    --accent: #1f6f5c; --crisis: #b3261e; --safeguarding: #8a4b08; --elevated: #8a6d00; --routine: #3d5a80;
+    --bezel: #22282a; --screen: #f3f6f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #141817; --panel: #1d2321; --ink: #e8ece9; --muted: #9aa5a0; --line: #2f3835;
+      --accent: #5fbfa5; --crisis: #ff8a80; --safeguarding: #f0a35e; --elevated: #e6c84f; --routine: #8fb3e0;
+      --bezel: #0b0d0d; --screen: #10201b; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; font-feature-settings: "cv11", "ss01"; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 56px; }
+  .intro { max-width: 640px; margin-bottom: 20px; }
+  .intro h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; }
+  .intro p { margin: 0 0 8px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .notice { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-size: 13.5px; margin-bottom: 24px; max-width: 640px; }
+  .notice strong { font-weight: 600; }
+  .stage { display: grid; grid-template-columns: 340px 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 820px) { .stage { grid-template-columns: 1fr; } .phone { margin: 0 auto; } }
+  h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+
+  /* the pretend phone */
+  .phone { width: 100%; max-width: 330px; background: var(--bezel); border-radius: 36px; padding: 14px 12px 18px; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset; }
+  .speaker { width: 64px; height: 5px; border-radius: 3px; background: #3a4244; margin: 2px auto 12px; }
+  .screen { background: var(--screen); border-radius: 18px; height: 520px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .status { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 500; padding: 8px 14px 4px; color: var(--muted); }
+  .tabs { display: flex; gap: 4px; padding: 4px 10px 8px; }
+  .tabs button { flex: 1; background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 6px 0; font-size: 13.5px; }
+  .tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .dial { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px; text-align: center; }
+  .dial .code { font-size: 30px; font-weight: 600; letter-spacing: .02em; }
+  .call { width: 64px; height: 64px; border-radius: 50%; padding: 0; display: grid; place-items: center; background: #2e9d5b; border-color: #2e9d5b; }
+  .thread-head { padding: 6px 14px 8px; font-weight: 600; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .sms-list { flex: 1; overflow-y: auto; padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
+  .bubble { padding: 7px 11px; border-radius: 14px; max-width: 86%; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+  .bubble time { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .bubble.in { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .bubble.in time { color: rgba(255,255,255,.75); }
+  .bubble.out { background: var(--panel); border: 1px solid var(--line); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .typing { align-self: flex-start; font-size: 13px; color: var(--muted); padding: 2px 6px; }
+  .compose { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+  .compose input { flex: 1; }
+  .empty-thread { margin: auto; text-align: center; color: var(--muted); font-size: 13.5px; padding: 0 18px; }
+
+  /* the ussd pop up, like the box a basic phone shows */
+  .ussd { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 14px; }
+  .ussd-box { background: var(--panel); border-radius: 12px; padding: 14px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .ussd-text { white-space: pre-wrap; font-size: 14px; margin: 0 0 10px; max-height: 260px; overflow-y: auto; }
+  .ussd-box .actions { justify-content: flex-end; }
+
+  .tries { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; max-width: 330px; }
+  .tries button { background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; font-size: 13px; padding: 5px 11px; font-weight: 400; }
+  @media (max-width: 820px) { .tries { margin-left: auto; margin-right: auto; } }
+
+  /* the counselor side, same look as the dashboard */
+  .case { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--routine); border-radius: 10px; padding: 16px 18px; }
+  .case.crisis { border-left-color: var(--crisis); } .case.safeguarding { border-left-color: var(--safeguarding); }
+  .case.elevated { border-left-color: var(--elevated); }
+  .case-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .tier { font-weight: 600; font-size: 14px; color: var(--routine); }
+  .crisis .tier { color: var(--crisis); } .safeguarding .tier { color: var(--safeguarding); } .elevated .tier { color: var(--elevated); }
+  .reason { margin: 6px 0 0; }
+  .flag { display: inline-block; margin: 8px 8px 0 0; padding: 2px 10px; border-radius: 999px; font-size: 13px; background: var(--bg); border: 1px solid var(--line); }
+  .flag.paged { border-color: var(--crisis); color: var(--crisis); }
+  .thread { margin: 14px 0 12px; display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+  .msg { padding: 8px 12px; border-radius: 12px; max-width: 82%; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg time { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .msg.in { background: var(--bg); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.out { background: color-mix(in srgb, var(--accent) 14%, transparent); align-self: flex-end; border-bottom-right-radius: 4px; }
+  .waiting { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 28px 22px; }
+  .waiting p { margin: 0 0 8px; }
+  .waiting p:last-child { margin: 0; }
+  .how { margin-top: 22px; }
+  .how ol { margin: 0; padding-left: 20px; }
+  .how li { margin-bottom: 6px; }
+
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+  textarea, input { width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); resize: vertical; }
+  button { font: inherit; font-weight: 500; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  button.secondary { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .count { font-size: 12px; text-align: right; margin-top: 4px; }
+  .error { color: var(--crisis); font-size: 13px; margin: 8px 0 0; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1f6f5c"/><path d="M16 24s-7-4.3-7-9.4A3.9 3.9 0 0 1 16 12a3.9 3.9 0 0 1 7 2.6C23 19.7 16 24 16 24z" fill="#fff"/></svg>
+  <h1>AmaniHaven</h1>
+</header>
+
+<main>
+  <section class="intro">
+    <h2>Try it the way someone with a basic phone would</h2>
+    <p>On the left is a pretend phone. Dial the code to use the menu, or text the line in English or Kiswahili. On the right is what a counselor sees when someone needs a person.</p>
+  </section>
+
+  <p class="notice"><strong>This is only a demo.</strong> Nothing here reaches a real phone or a real counselor. If you need help right now, call Red Cross on 1199 or Childline on 116. Both are free.</p>
+
+  <div class="stage">
+    <section aria-labelledby="phone-title">
+      <h3 id="phone-title">Their phone</h3>
+      <div class="phone">
+        <div class="speaker"></div>
+        <div class="screen">
+          <div class="status"><span>Safaricom</span><span id="clock"></span></div>
+          <div class="tabs" role="tablist">
+            <button role="tab" id="tab-dial" aria-selected="true" aria-controls="view-dial">Dial</button>
+            <button role="tab" id="tab-sms" aria-selected="false" aria-controls="view-sms">Messages</button>
+          </div>
+
+          <div class="view" id="view-dial" role="tabpanel" aria-labelledby="tab-dial">
+            <div class="dial">
+              <div class="muted">Dial this code</div>
+              <div class="code" id="code"></div>
+              <button class="call" id="call" aria-label="Call">
+                <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>
+              </button>
+              <div class="muted">No airtime or data needed</div>
+            </div>
+          </div>
+
+          <div class="view hidden" id="view-sms" role="tabpanel" aria-labelledby="tab-sms">
+            <div class="thread-head" id="sms-head"></div>
+            <div class="sms-list" id="sms-list" aria-live="polite"></div>
+            <form class="compose" id="sms-form">
+              <input id="sms-text" maxlength="300" autocomplete="off" placeholder="Text message" aria-label="Text message">
+              <button type="submit" id="sms-send">Send</button>
+            </form>
+          </div>
+
+          <div class="ussd hidden" id="ussd" role="dialog" aria-modal="true" aria-label="USSD menu">
+            <div class="ussd-box">
+              <p class="ussd-text" id="ussd-text"></p>
+              <form id="ussd-form">
+                <input id="ussd-input" inputmode="numeric" maxlength="20" autocomplete="off" aria-label="Your answer">
+                <div class="actions">
+                  <button type="button" class="secondary" id="ussd-cancel">Cancel</button>
+                  <button type="submit" id="ussd-send">Send</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tries" id="tries">
+        <button data-text="I'm so stressed about exams">I'm so stressed about exams</button>
+        <button data-text="Nimechoka na maisha">Nimechoka na maisha</button>
+        <button data-text="I want to end my life">I want to end my life</button>
+        <button data-text="HELP">HELP</button>
+      </div>
+      <p class="muted" style="max-width:330px">Tap an example to send it, or write your own.</p>
+    </section>
+
+    <section aria-labelledby="counselor-title">
+      <h3 id="counselor-title">What the counselor sees</h3>
+      <div id="counselor" aria-live="polite"></div>
+      <div class="how">
+        <h3>Things to try</h3>
+        <ol>
+          <li>Text something everyday, like exam stress. You get a self-help tip straight away and no case opens, because most people don't need a counselor.</li>
+          <li>Text "Nimechoka na maisha". It's unclear, so the service asks directly about suicide. Answer NDIO and watch a crisis case open here, with the on-call counselor paged.</li>
+          <li>Reply as the counselor from the case card. Your reply arrives on the phone like a normal SMS.</li>
+          <li>Dial the code to try the menu: breathing exercises, a four-question check-in, or asking for a call.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+const tierNames = { crisis: "Crisis", safeguarding: "Safeguarding", elevated: "Needs a check-in", routine: "Routine" };
+const languageNames = { sw: "Kiswahili", en: "English" };
+const sourceNames = { sms: "SMS", ussd: "USSD menu" };
+
+let demo = null;
+let path = [];
+let lastSeen = "";
+let typing = false;
+let messages = [];
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") node.className = v; else if (k.startsWith("on")) node.addEventListener(k.slice(2), v); else node.setAttribute(k, v);
+  }
+  for (const c of children) node.append(c instanceof Node ? c : document.createTextNode(c ?? ""));
+  return node;
+}
+
+async function api(url, body) {
+  const opts = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+  const res = await fetch(url, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Something went wrong. Please try again.");
+  return data;
+}
+
+function clock(iso) { return new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
+function segments(text) { return Math.max(1, Math.ceil(text.length / 153)); }
+function tick() { $("#clock").textContent = clock(new Date().toISOString()); }
+
+// switching between the dial pad and the messages
+function showTab(name) {
+  for (const t of ["dial", "sms"]) {
+    $("#tab-" + t).setAttribute("aria-selected", String(t === name));
+    $("#view-" + t).classList.toggle("hidden", t !== name);
+  }
+  if (name === "sms") $("#sms-text").focus();
+}
+$("#tab-dial").addEventListener("click", () => showTab("dial"));
+$("#tab-sms").addEventListener("click", () => showTab("sms"));
+
+// the phone's messages
+function renderPhone(messages) {
+  const list = $("#sms-list");
+  const nodes = messages.map(m => el("div", { class: "bubble " + m.direction }, m.text, el("time", { datetime: m.at }, clock(m.at))));
+  if (typing) nodes.push(el("div", { class: "typing" }, "Sending..."));
+  if (!nodes.length) nodes.push(el("p", { class: "empty-thread" }, "Write anything you like. Replies come back in the language you write in."));
+  list.replaceChildren(...nodes);
+  list.scrollTop = list.scrollHeight;
+}
+
+// the counselor's case card, or a note while there's no case
+function renderCounselor(c) {
+  const box = $("#counselor");
+  if (!c) {
+    box.replaceChildren(el("div", { class: "waiting" },
+      el("p", {}, "No case yet."),
+      el("p", { class: "muted" }, "Most messages get an instant self-help reply and never need a counselor. A case opens here when someone is at risk, asks for a call, or keeps writing in distress.")));
+    return;
+  }
+  if (document.activeElement && document.activeElement.id === "reply-text") return;
+  const error = el("p", { class: "error", role: "alert" });
+  const reply = el("textarea", { id: "reply-text", rows: "3", maxlength: "300", placeholder: "Reply as the counselor. It goes to the phone as an SMS.", "aria-label": "Reply as the counselor" });
+  const counter = el("div", { class: "count muted" }, " ");
+  const send = el("button", { disabled: "", onclick: async () => {
+    error.textContent = ""; send.setAttribute("disabled", "");
+    try { reply.blur(); apply(await api("/api/demo/reply", { id: demo.id, text: reply.value })); showTab("sms"); }
+    catch (e) { error.textContent = e.message; send.removeAttribute("disabled"); }
+  } }, "Send SMS");
+  reply.addEventListener("input", () => {
+    counter.textContent = reply.value.length ? `${reply.value.length} characters, ${segments(reply.value)} SMS` : " ";
+    send.toggleAttribute("disabled", !reply.value.trim());
+  });
+
+  const status = c.status === "closed" ? "Closed" : c.status === "open" ? "Waiting for someone" : c.claimed_by ? "With " + c.claimed_by : c.status;
+  const details = [status, "via " + (sourceNames[c.source] || c.source), languageNames[c.language] || c.language, c.phone_masked].filter(Boolean).join(" · ");
+  box.replaceChildren(el("article", { class: "case " + c.tier },
+    el("div", { class: "case-top" },
+      el("span", { class: "tier" }, tierNames[c.tier] || c.tier),
+      el("span", { class: "muted" }, `Case ${c.id} · opened ${clock(c.created_at)}`)),
+    el("div", { class: "muted" }, details),
+    c.reason ? el("p", { class: "reason" }, c.reason) : "",
+    c.paged ? el("span", { class: "flag paged" }, "On-call counselor paged by SMS") : "",
+    c.callback_consent ? el("span", { class: "flag" }, "Would like a phone call") : "",
+    el("div", { class: "thread" }, ...c.thread.map(m =>
+      el("div", { class: "msg " + m.direction }, m.text ?? "", el("time", { datetime: m.at }, clock(m.at))))),
+    c.status === "closed" ? "" : reply, c.status === "closed" ? "" : counter,
+    c.status === "closed" ? "" : el("div", { class: "actions" }, send),
+    error,
+    el("p", { class: "muted" }, "Counselors never see the full number unless the person agreed to a call or is in crisis, and the alert on their phone never includes the person's words.")));
+}
+
+function apply(state) {
+  // only redraw when something changed, so the counselor's reply box isn't wiped mid sentence
+  const key = JSON.stringify(state);
+  if (key === lastSeen) return;
+  lastSeen = key;
+  messages = state.messages;
+  renderPhone(messages);
+  renderCounselor(state.case);
+}
+
+async function refresh() {
+  if (!demo || document.hidden) return;
+  try { apply(await api("/api/demo/state?id=" + encodeURIComponent(demo.id))); } catch (e) {}
+}
+
+// sending a text from the phone
+async function sendSms(text) {
+  text = text.trim();
+  if (!text || typing) return;
+  showTab("sms");
+  $("#sms-text").value = "";
+  typing = true;
+  lastSeen = "";
+  const before = messages;
+  renderPhone([...before, { direction: "in", text, at: new Date().toISOString() }]);
+  try { const state = await api("/api/demo/sms", { id: demo.id, text }); typing = false; apply(state); }
+  catch (e) { typing = false; renderPhone(before); $("#sms-list").append(el("p", { class: "error" }, e.message)); }
+}
+$("#sms-form").addEventListener("submit", (e) => { e.preventDefault(); sendSms($("#sms-text").value); });
+$("#tries").addEventListener("click", (e) => { const t = e.target.closest("button"); if (t) sendSms(t.dataset.text); });
+
+// the ussd session, which sends the whole keypress path each time like the networks do
+async function ussdStep() {
+  $("#ussd-send").setAttribute("disabled", "");
+  try {
+    const r = await api("/api/demo/ussd", { id: demo.id, text: path.join("*") });
+    $("#ussd-text").textContent = r.text;
+    $("#ussd-input").classList.toggle("hidden", r.end);
+    $("#ussd-send").classList.toggle("hidden", r.end);
+    $("#ussd-cancel").textContent = r.end ? "OK" : "Cancel";
+    $("#ussd-input").value = "";
+    if (!r.end) $("#ussd-input").focus(); else $("#ussd-cancel").focus();
+    refresh();
+  } catch (e) {
+    $("#ussd-text").textContent = e.message;
+  } finally { $("#ussd-send").removeAttribute("disabled"); }
+}
+$("#call").addEventListener("click", () => { path = []; $("#ussd-text").textContent = "Running USSD code..."; $("#ussd").classList.remove("hidden"); ussdStep(); });
+$("#ussd-form").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#ussd-input").value.trim(); if (!v) return; path.push(v); ussdStep(); });
+$("#ussd-cancel").addEventListener("click", () => { $("#ussd").classList.add("hidden"); path = []; $("#call").focus(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#ussd").classList.contains("hidden")) $("#ussd-cancel").click(); });
+
+async function begin() {
+  tick(); setInterval(tick, 30000);
+  try {
+    demo = await api("/api/demo/start", {});
+    $("#code").textContent = demo.ussd_code;
+    $("#sms-head").textContent = demo.shortcode;
+    apply({ messages: [], case: null });
+    setInterval(refresh, 3000);
+  } catch (e) {
+    $("#counselor").replaceChildren(el("p", { class: "error" }, "The demo couldn't start. Please refresh the page."));
+  }
+}
+begin();
+</script>
+</body>
+</html>

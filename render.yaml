@@ -59,3 +59,6 @@ services:
         sync: false
       - key: MAX_REPLIES_PER_HOUR
         value: "20"
+      # the public /demo page, only allowed with the africa's talking sandbox
+      - key: DEMO_ENABLED
+        value: "true"

@@ -10,12 +10,14 @@ from fastapi.responses import FileResponse, PlainTextResponse
 from app import db
 from app.config import get_settings
 from app.counselor import router as counselor_router
+from app.demo import router as demo_router
 from app.sms import handle_inbound_sms
 from app.ussd import handle_ussd
 
 # web entry points
 # /ussd and /sms/inbound take africa's talking callbacks, /sms/delivery takes delivery reports
 # /counselor is the dashboard, /api/counselor its api and /api/admin/stats gives sponsors anonymous numbers
+# /demo is a pretend phone for showing the service, switched on with DEMO_ENABLED
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("amanihaven")
@@ -46,6 +48,7 @@ async def lifespan(app):
 
 app = FastAPI(title="AmaniHaven", lifespan=lifespan)
 app.include_router(counselor_router)
+app.include_router(demo_router)
 
 
 def verify_webhook(key: str = Query(default="")):
@@ -71,8 +74,17 @@ async def ussd(
 ):
     result = handle_ussd(phoneNumber, text)
     for followup in result.followups:
-        background.add_task(followup)
+        background.add_task(_run_followup, followup)
     return result.body
+
+
+async def _run_followup(followup):
+    # followups return coroutines, so they have to be awaited here
+    # handing the bare function to the background task would build the coroutine and never run it
+    try:
+        await followup()
+    except Exception:
+        log.exception("ussd followup failed")
 
 
 async def _safe_handle_sms(phone, text):
@@ -107,6 +119,13 @@ async def sms_delivery(id: str = Form(default=""), status: str = Form(default=""
 @app.get("/counselor", include_in_schema=False)
 def counselor_dashboard():
     return FileResponse(static_dir / "counselor.html")
+
+
+@app.get("/demo", include_in_schema=False)
+def demo_page():
+    if not get_settings().demo_enabled:
+        raise HTTPException(status_code=404)
+    return FileResponse(static_dir / "demo.html")
 
 
 def require_admin(authorization: str = Header(default="")):

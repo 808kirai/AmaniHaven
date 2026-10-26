@@ -87,6 +87,9 @@ class settings:
     admin_token: str = field(default_factory=_env("ADMIN_TOKEN"))
     helplines: list = field(default_factory=_helplines)
 
+    # the public /demo page with a pretend phone, only for a sandbox demo server
+    demo_enabled: bool = field(default_factory=lambda: os.getenv("DEMO_ENABLED", "false").lower() == "true")
+
     @property
     def is_production(self):
         return self.env == "production"
@@ -109,6 +112,9 @@ class settings:
             raise RuntimeError("COUNSELOR_TOKENS must name at least one counselor in production")
         if self.sms_gateway != "africastalking":
             raise RuntimeError("SMS_GATEWAY must be africastalking in production")
+        # demo visitors can open crisis cases, which must never page a real on call team
+        if self.demo_enabled and self.at_username != "sandbox":
+            raise RuntimeError("DEMO_ENABLED is only allowed with the africa's talking sandbox")
 
 
 @lru_cache

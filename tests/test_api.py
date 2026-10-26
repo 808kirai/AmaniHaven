@@ -22,6 +22,16 @@ def test_ussd_endpoint(client):
     assert r.text.startswith("CON AmaniHaven")
 
 
+def test_ussd_followups_run_over_http(client, gateway):
+    # the sms and the counselor alert behind a ussd screen must really go out, not only show as done
+    form = {"sessionId": "s1", "phoneNumber": phone, "serviceCode": "*384*123#"}
+    assert client.post("/ussd", data={**form, "text": "4*2"}).text.startswith("END")
+    assert any(to == phone and "1199" in m for to, m in gateway.sent)
+    client.post("/ussd", data={**form, "text": "4*1*1"})
+    assert len(db.list_cases()) == 1
+    assert any(to != phone for to, m in gateway.sent)
+
+
 def test_webhook_secret_enforced(client, monkeypatch):
     monkeypatch.setenv("WEBHOOK_SECRET", "s3cret")
     reload_settings()
