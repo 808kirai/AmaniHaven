@@ -78,6 +78,28 @@ def test_safety_question_no_supports(gateway):
     assert db.list_cases() == []
 
 
+def test_safety_question_yes_with_more_words_escalates(gateway):
+    for answer in ("yes i am", "Ndio nataka", "yes. every day"):
+        db.delete_user_data(uh())
+        text("I'm tired of living")
+        text(answer)
+        assert db.list_cases()[0]["tier"] == "crisis", answer
+        assert "999" in replies(gateway)[-1]
+
+
+def test_safety_question_no_with_more_words_supports(gateway):
+    text("I'm tired of living")
+    text("hapana asante")
+    assert replies(gateway)[-1].startswith("Thank you for answering honestly.")
+    assert db.list_cases() == []
+
+
+def test_safety_question_no_with_crisis_words_still_escalates(gateway):
+    text("I'm tired of living")
+    text("no but i want to kill myself")
+    assert db.list_cases()[0]["tier"] == "crisis"
+
+
 def test_swahili_message_gets_swahili_reply(gateway):
     text("Nimechoka sana na kazi yangu")
     assert replies(gateway)[0].startswith("Asante kwa kutueleza.")
@@ -111,6 +133,20 @@ def test_delete_needs_confirmation(gateway):
     with db.tx() as c:
         assert c.execute("select count(*) from messages").fetchone()[0] == 0
     assert "deleted" in gateway.sent[-1][1]
+
+
+def test_delete_accepts_a_short_yes(gateway):
+    text("I'm stressed")
+    text("DELETE")
+    text("yes please")
+    assert db.get_user(uh()) is None
+
+
+def test_delete_ignores_a_long_reply_starting_with_yes(gateway):
+    text("I'm stressed")
+    text("DELETE")
+    text("yes but first tell me what happens to my case")
+    assert db.get_user(uh()) is not None
 
 
 def test_persistent_distress_opens_case(gateway):
