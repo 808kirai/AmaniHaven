@@ -3,6 +3,7 @@ import logging
 from app import db
 from app.config import get_settings
 from app.gateway import get_gateway
+from app.privacy import normalize_msisdn
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +21,8 @@ async def escalate(user_hash, tier, source, reason, callback=False):
         text = f"AmaniHaven: {label} case #{case_id} needs a counselor. Open the dashboard."
         numbers = get_settings().counselor_alert_numbers
         for number in numbers:
-            await get_gateway().send(number, text)
+            # the gateway needs the +254 form, and the setting may be written as 0712 345 678
+            await get_gateway().send(normalize_msisdn(number), text)
         if not numbers:
             log.warning("case %s opened as %s but COUNSELOR_ALERT_NUMBERS is empty", case_id, tier)
     return case_id

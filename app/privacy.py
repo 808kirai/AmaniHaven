@@ -34,8 +34,14 @@ def normalize_msisdn(phone):
     digits = re.sub(r"[^\d+]", "", phone or "")
     if digits.startswith("+"):
         return digits
+    # 00 is the international prefix, the same as +
+    if digits.startswith("00"):
+        return "+" + digits[2:]
     if digits.startswith("0") and len(digits) == 10:
         return "+254" + digits[1:]
+    # a kenyan mobile number written without its leading 0, like 712 345 678
+    if len(digits) == 9 and digits[0] in "17":
+        return "+254" + digits
     return "+" + digits
 
 

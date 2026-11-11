@@ -6,6 +6,9 @@ from app.privacy import decrypt, encrypt, hash_phone, mask_phone, normalize_msis
 def test_number_formats_hash_the_same():
     assert normalize_msisdn("0712 345 678") == "+254712345678"
     assert hash_phone("0712345678") == hash_phone("+254712345678") == hash_phone("254712345678")
+    assert normalize_msisdn("712 345 678") == "+254712345678"
+    assert normalize_msisdn("00254712345678") == "+254712345678"
+    assert normalize_msisdn("0110 123 456") == "+254110123456"
 
 
 def test_encryption_round_trip():

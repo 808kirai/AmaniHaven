@@ -50,6 +50,13 @@ def test_crisis_reply_case_and_alert(gateway):
     assert f"#{case['id']}" in alert and "kill" not in alert and phone not in alert
 
 
+def test_local_format_alert_number_is_paged_in_international_form(gateway, monkeypatch):
+    monkeypatch.setenv("COUNSELOR_ALERT_NUMBERS", "0700 000 001")
+    reload_settings()
+    text("I want to kill myself")
+    assert len(alerts(gateway)) == 1
+
+
 def test_repeat_crisis_messages_do_not_spam_counselors(gateway):
     text("I want to kill myself")
     text("I want to die")
