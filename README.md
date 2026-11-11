@@ -120,7 +120,7 @@ All settings come from environment variables, listed with examples in `.env.exam
 - `SMS_GATEWAY` - `console` prints messages, `africastalking` sends them
 - `LLM_ENABLED` - Turns the Claude second opinion on or off
 - `COUNSELOR_TOKENS` - Counselor names and dashboard tokens
-- `COUNSELOR_ALERT_NUMBERS` - Phones paged for crisis cases
+- `COUNSELOR_ALERT_NUMBERS` - Phones paged for crisis cases, required in production
 - `MAX_REPLIES_PER_HOUR` - Reply limit per person, defaults to `20`
 - `DEMO_ENABLED` - Turns on the public /demo page, sandbox only
 

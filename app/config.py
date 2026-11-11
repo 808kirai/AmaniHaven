@@ -3,6 +3,7 @@ import os
 from dataclasses import dataclass, field
 from functools import lru_cache
 
+from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 
 # read .env when it exists so local runs pick up their settings
@@ -110,6 +111,14 @@ class settings:
             raise RuntimeError(f"missing required production settings {', '.join(missing)}")
         if not self.counselor_tokens:
             raise RuntimeError("COUNSELOR_TOKENS must name at least one counselor in production")
+        # with no numbers a crisis case opens on the dashboard but pages nobody
+        if not self.counselor_alert_numbers:
+            raise RuntimeError("COUNSELOR_ALERT_NUMBERS must list at least one phone in production")
+        # a bad key would only fail on the first message, losing it, so check it at startup
+        try:
+            Fernet(self.data_encryption_key.encode())
+        except ValueError:
+            raise RuntimeError("DATA_ENCRYPTION_KEY is not a valid Fernet key") from None
         if self.sms_gateway != "africastalking":
             raise RuntimeError("SMS_GATEWAY must be africastalking in production")
         # demo visitors can open crisis cases, which must never page a real on call team
