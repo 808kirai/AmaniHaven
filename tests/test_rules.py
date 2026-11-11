@@ -19,6 +19,10 @@ from app.triage.rules import assess, detect_language
         "Sitaki kuishi tena",
         "nimekunywa sumu",
         "I am fine. But I don't want to live anymore",
+        "i want to kms", "im going to kms tonight", "i want to unalive myself", "thinking of unaliving myself",
+        "im going to end it tonight", "I want to end my own life", "i will shoot myself", "going to slit my wrists",
+        "i have pills and im taking them all tonight", "i wont be alive tomorrow",
+        "nataka kujitoa uhai", "nimeamua kujitoa uhai", "nataka kunywa dawa zote", "sitaki kuendelea kuishi",
     ],
 )
 def test_crisis_language(text):
@@ -44,6 +48,8 @@ def test_negated_crisis_asks_safety_question(text):
     [
         "I'm tired of living", "nobody would miss me", "Nimechoka na maisha", "life has no meaning",
         "im dying help mee", "I am dying", "I feel like dying", "nakufa", "ninakufa", "nahisi kufa",
+        "life is not worth living", "i dont want to be here anymore", "i want to sleep forever and never wake up",
+        "i want to end it", "goodbye everyone this is my last message",
     ],
 )
 def test_passive_ideation_asks_safety_question(text):
@@ -72,6 +78,7 @@ def test_elevated(text):
     [
         "I'm stressed about exams", "this exam is killing me", "hello", "sina pesa ya karo", "I can't sleep",
         "im dying of laughter", "I'm dying to see the new film", "nakufa kicheko",
+        "i ran 5 kms this morning", "the shop is 2 kms away",
     ],
 )
 def test_routine(text):
