@@ -195,8 +195,12 @@ def _find(patterns, texts):
 
 def _negated(clause, start):
     # looks at the three words before the match
-    preceding = clause[:start].split()[-3:]
-    return any(w in negators for w in preceding)
+    words = clause[:start].split()
+    # a no that opens the clause is an answer, as in no i want to die, not a negation
+    # sms often has no comma to split it off
+    if words and words[0] == "no":
+        words = words[1:]
+    return any(w in negators for w in words[-3:])
 
 
 def assess(text):

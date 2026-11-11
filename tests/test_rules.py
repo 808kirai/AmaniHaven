@@ -23,6 +23,7 @@ from app.triage.rules import assess, detect_language
         "im going to end it tonight", "I want to end my own life", "i will shoot myself", "going to slit my wrists",
         "i have pills and im taking them all tonight", "i wont be alive tomorrow",
         "nataka kujitoa uhai", "nimeamua kujitoa uhai", "nataka kunywa dawa zote", "sitaki kuendelea kuishi",
+        "no i want to die", "no I want to kill myself",
     ],
 )
 def test_crisis_language(text):
@@ -35,6 +36,8 @@ def test_crisis_language(text):
         "I'm not suicidal, just stressed",
         "I would never kill myself",
         "I don't want to die but I'm so tired",
+        "no i dont want to die",
+        "no i would never kill myself",
     ],
 )
 def test_negated_crisis_asks_safety_question(text):
