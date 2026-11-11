@@ -8,7 +8,7 @@ from app.escalation import escalate
 from app.gateway import get_gateway, send_to_user
 from app.privacy import decrypt, normalize_msisdn
 from app.triage.engine import triage
-from app.triage.rules import detect_language
+from app.triage.rules import assess, detect_language
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +37,19 @@ def _keyword(text):
     if len(text) > 15:
         return ""
     return re.sub(r"[^A-Z]", "", text.upper())
+
+
+def _answer(text, max_words=None):
+    # yes or no from the first word, so yes i am and hapana asante both count
+    # returns None when the reply doesn't start with either
+    words = re.findall(r"[A-Za-z]+", text.upper())
+    if not words or (max_words and len(words) > max_words):
+        return None
+    if words[0] in yes_words:
+        return "yes"
+    if words[0] in no_words:
+        return "no"
+    return None
 
 
 def _next_tip(user, topics, lang):
@@ -93,21 +106,25 @@ async def handle_inbound_sms(phone, text):
     pending = user["pending_state"]
     if pending:
         db.update_user(uh, pending_state=None)
-    if pending == "confirm_delete" and word in yes_words:
+    # deleting can't be undone, so only a short reply counts
+    delete_answer = _answer(text, max_words=3)
+    safety_answer = _answer(text)
+    if pending == "confirm_delete" and delete_answer == "yes":
         db.delete_user_data(uh)
         # the thread is gone now, so send directly without keeping a copy
         await get_gateway().send(normalize_msisdn(phone), content.sms("deleted", lang))
         return
-    if pending == "confirm_delete" and word in no_words:
+    if pending == "confirm_delete" and delete_answer == "no":
         db.save_message(uh, "in", "sms", text)
         await send_to_user(uh, content.sms("kept", lang))
         return
-    if pending == "safety_question" and word in yes_words:
+    if pending == "safety_question" and safety_answer == "yes":
         db.save_message(uh, "in", "sms", text, tier="crisis")
         db.record_event("sms_in", tier="crisis", channel="sms")
         await _crisis(uh, "crisis", lang, "Answered YES to the direct suicide question")
         return
-    if pending == "safety_question" and word in no_words:
+    # no but i want to die still goes through triage below
+    if pending == "safety_question" and safety_answer == "no" and assess(text).tier not in ("crisis", "safeguarding"):
         db.save_message(uh, "in", "sms", text, tier="elevated")
         tip = _next_tip(user, [], lang)
         await send_to_user(uh, content.sms("safety_no", lang) + " " + content.sms("elevated", lang, tip=tip))
